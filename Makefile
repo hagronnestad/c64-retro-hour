@@ -301,7 +301,7 @@ $(TARGETOBJDIR)/%.o: %.a65 | $(TARGETOBJDIR)
 	cl65 -t $(CC65TARGET) -c --create-dep $(@:.o=.d) $(ASFLAGS) -o $@ $<
 
 $(PROGRAM): $(CONFIG) $(OBJECTS) $(LIBS)
-	cl65 -t $(CC65TARGET) $(LDFLAGS) -o $@ $(patsubst %.cfg,-C %.cfg,$^)
+	cl65 -t $(CC65TARGET) $(LDFLAGS) -o $@.prg $(patsubst %.cfg,-C %.cfg,$^)
 
 test: $(PROGRAM)
 	$(PREEMUCMD)
