@@ -2,3 +2,5 @@
 build/
 obj/
 *.o
+*.prg
+*.c64
