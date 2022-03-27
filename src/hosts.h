@@ -1,3 +1,7 @@
+#define HOST_DAN 0
+#define HOST_RAVI 1
+#define HOST_JOE 2
+
 char *hosts_name[] = {
     "DAN WOOD",
     "RAVI ABBOTT",
