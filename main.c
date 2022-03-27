@@ -8,6 +8,8 @@
 #include "hosts.h"
 #include "episodes.h"
 
+#define VERSION "v1.0.0"
+
 typedef unsigned char BOOL;
 typedef unsigned char BYTE;
 
@@ -32,7 +34,7 @@ unsigned int i, j;
 BOOL episode_search_active = 0;
 unsigned char episode_search_query_index = 0;
 unsigned char episode_search_query_index_max = 14;
-char* episode_search_query = "_______________"; // 15 chars max + null termination
+char episode_search_query[16] = {0}; // 15 chars max + null termination
 
 
 void switch_page(char page);
@@ -172,19 +174,21 @@ void page_home_draw()
     printf("\xBF DATABASE STATISTICS");
     gotoxy(3, 6);
     cputcn('\xA3', 19);
-    gotoxy(1, 7);
-    printf("+ UPDATED:     %s", episodes_update_date);
-    gotoxy(1, 8);
-    printf("+ EPISODES:    %d", episodes_count);
+    gotoxy(3, 7);
+    printf("UPDATED:   %s", episodes_update_date);
+    gotoxy(3, 8);
+    printf("EPISODES:  %d", episodes_count);
+    gotoxy(3, 9);
+    printf("VERSION:   %s", VERSION);
 
     textcolor(COLOR_LIGHTGREEN);
     // gotoxy(1, 16);
     // printf("> CREATED BY");
     // gotoxy(3, 17);
     // cputcn('\xA3', 10);
-    gotoxy(1, 19);
+    gotoxy(3, 19);
     printf("HAG'S LAB");
-    gotoxy(1, 20);
+    gotoxy(3, 20);
     printf("hag.yt");
 
     // i = rand() % episodes_count;
@@ -232,41 +236,78 @@ void page_episodes_draw()
     draw_header("Episode Lookup");
     clear_display();
 
-    gotoxy(1, 6);
+    gotoxy(1, 5);
+    printf("\xBF EPISODE LOOKUP");
+    gotoxy(3, 6);
+    cputcn('\xA3', 14);
+
+    gotoxy(3, 8);
     printf("Episode # %d", current_episode_index + 1);
-    print_wrapped2(episodes[current_episode_index], 1, 8, 38);
+    print_wrapped2(episodes[current_episode_index], 3, 10, 36);
 
     tc = textcolor(COLOR_LIGHTGREEN);
-    gotoxy(1, 19);
-    printf("S: Search");
-    gotoxy(1, 20);
-    printf("Crsr Up/Down: Previous/Next Episode");
+    gotoxy(3, 19);
+    printf("      RETURN: Search");
+    gotoxy(3, 20);
+    printf("CRSR UP/DOWN: Previous/Next Episode");
     textcolor(tc);
 
     if (episode_search_active == 1) {
         cursor(1);
-        gotoxy(1, 12);
-        printf("Query: ");
-        gotoxy(8, 12);
+        gotoxy(3, 14);
+        printf("QUERY: ");
+        gotoxy(10, 14);
         
         while (1)
         {
             c = cgetc();
 
-            if (c == 13)
+            if (c == 20) // Delete
             {
+                if (episode_search_query_index == 0) continue;
+                gotoxy(10 + episode_search_query_index - 1, 14);
+                cputc(' ');
+                episode_search_query[episode_search_query_index - 1] = 0;
+                episode_search_query_index--;
+
+                gotoxy(10, 14);
+                printf("%s", episode_search_query);
+            }
+
+            if (c == 13) // Return
+            {
+                gotoxy(3, 15);
+                printf("Searching...        ");
+
                 episode_search_active = 0;
                 query_int = strtol(episode_search_query, NULL, 10);
 
                 if (query_int > 0 && query_int <= episodes_count) {
                     current_episode_index = query_int - 1;
+                    goto done;
                 }
-                else{
-                    gotoxy(1, 13);
-                    printf("INVALID INPUT!");
-                    cgetc();
+                
+                if (query_int == 0 && episode_search_query_index > 0) {
+                    for (i = current_episode_index + 1; i < episodes_count; i++)
+                    {
+                        if (strstr(episodes[i], episode_search_query) != NULL)
+                        {
+                            current_episode_index = i;
+                            goto done;
+                        }
+                    }
+
+                    current_episode_index = 0;
                 }
 
+                gotoxy(0, 15);
+                printf("                                        ");
+                gotoxy(3, 15);
+                printf("No more results!");
+                cgetc();
+                current_episode_index = 0;
+
+done:
                 episode_search_query_index = 0;
                 episode_search_query[0] = 0;
 
@@ -280,12 +321,23 @@ void page_episodes_draw()
 
             // Accept numeric input
             if (c >= '0' && c <= '9')
-            {               
+            {
                 episode_search_query[episode_search_query_index] = c;
                 episode_search_query[episode_search_query_index + 1] = 0;
                 episode_search_query_index++;
 
-                gotoxy(8, 12);
+                gotoxy(10, 14);
+                printf("%s", episode_search_query);
+            }
+
+            // Accept alpha input
+            if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'))
+            {
+                episode_search_query[episode_search_query_index] = c;
+                episode_search_query[episode_search_query_index + 1] = 0;
+                episode_search_query_index++;
+
+                gotoxy(10, 14);
                 printf("%s", episode_search_query);
             }
         }
@@ -305,9 +357,9 @@ void page_random_episodes_draw()
     cputcn('\xA3', 14);
 
     i = rand() % episodes_count;
-    gotoxy(1, 8);
-    printf("# %d", i + 1);
-    print_wrapped2(episodes[i], 1, 10, 38);
+    gotoxy(3, 8);
+    printf("Episode # %d", i + 1);
+    print_wrapped2(episodes[i], 3, 10, 36);
 }
 
 void switch_page(char page)
@@ -380,7 +432,7 @@ void handle_input_for_page(char key)
             switch_page(PAGE_EPISODES);
             break;
 
-        case 's':
+        case 13: // Return
             episode_search_active = (episode_search_active == 0 ? 1 : 0);
             switch_page(PAGE_EPISODES);
             break;
