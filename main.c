@@ -6,6 +6,7 @@
 #include <unistd.h>
 
 #include "splash.h"
+#include "hagslab.h"
 #include "hosts.h"
 #include "episodes.h"
 
@@ -37,7 +38,9 @@ unsigned char episode_search_query_index = 0;
 unsigned char episode_search_query_index_max = 14;
 char episode_search_query[16] = {0}; // 15 chars max + null termination
 
+unsigned char ee_trigger = 0;
 
+int main(void);
 void switch_page(char page);
 
 
@@ -460,6 +463,13 @@ void handle_input_for_page(char key)
 
 BOOL handle_input_global(key)
 {
+    // Easter egg trigger
+    // HAG needs to be typed out
+    if (ee_trigger == 0 && key == 'h') ee_trigger++;
+    else if (ee_trigger == 1 && key == 'a') ee_trigger++;
+    else if (ee_trigger == 2 && key == 'g') ee_trigger++;
+    else ee_trigger = 0;
+
     switch (key)
     {
     case 19: // CLR/HOME
@@ -481,6 +491,50 @@ BOOL handle_input_global(key)
     case 136: // F7
         switch_page(PAGE_RANDOM_EPISODE);
         break;
+
+    case 'g':
+        if (ee_trigger < 3) break;
+        ee_trigger == 0;
+
+        clrscr();
+
+        // Set Color RAM
+        memset((char*)0xD800, COLOR_BLACK, 1000);
+
+        textcolor(COLOR_WHITE);
+        bordercolor(COLOR_LIGHTBLUE);
+        bgcolor(COLOR_BLUE);
+
+        c_sleep(2000);
+
+        // *(char*)0xD018 = 0x14; // Set upper case
+        printf("\x8E");
+
+        // Logo Splash
+        for (i = 0; i < 1000; i++) {
+            if (hagslab_splash_chars[i] == ' ') continue;
+            *((char*)0x0400 + i) = hagslab_splash_chars[i];
+            c_sleep(20);
+        }
+
+        ui_typewrite(1, 1, 100,  "    subscribe to my youtube channel     ");
+
+        for (i = 0; i < 1000; i++) {
+            if (hagslab_splash_chars[i] == ' ') continue;
+            *((char*)0xD800 + i) = hagslab_splash_colors[i];
+            c_sleep(20);
+        }
+
+        ui_typewrite(1, 23, 100, "        youtube.com/c/hagslab           ");
+
+        while (!kbhit())
+        {
+            (*((char*)0xD020))++;
+            c_sleep(1);
+        }
+        cgetc(); // remove char in buffer
+        main();
+
 
     default:
         return FALSE;
