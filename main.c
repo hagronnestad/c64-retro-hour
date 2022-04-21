@@ -484,6 +484,10 @@ int main(void)
     char key;
 
     clrscr();
+
+    // Set Color RAM
+    memset((char*)0xD800, COLOR_GRAY1, 1000);
+
     textcolor(COLOR_WHITE);
     bordercolor(COLOR_GREEN);
     bgcolor(COLOR_GREEN);
