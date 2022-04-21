@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <unistd.h>
 
+#include "splash.h"
 #include "hosts.h"
 #include "episodes.h"
 
@@ -482,11 +483,39 @@ int main(void)
 {
     char key;
 
+    clrscr();
+    textcolor(COLOR_WHITE);
+    bordercolor(COLOR_GREEN);
+    bgcolor(COLOR_GREEN);
+
+    c_sleep(2000);
+
     _randomize();
+
+    // *(char*)0xD018 = 0x14; // Set upper case
+    printf("\x8E");
+
+    // Logo Splash
+    for (i = 0; i < 1000; i++) {
+        if (splash_chars[i] == ' ') continue;
+        *((char*)0x0400 + i) = splash_chars[i];
+        c_sleep(5);
+    }
+
+    for (i = 0; i < 1000; i++) {
+        if (splash_chars[i] == ' ') continue;
+        *((char*)0xD800 + i) = splash_colors[i];
+        c_sleep(5);
+    }
+
+    cgetc();
+
     kbrepeat(KBREPEAT_ALL);
 
     bordercolor(COLOR_RED);
-    bgcolor(COLOR_GREEN);
+
+    // *(char*)0xD018 = 0x15; // Set lower case
+    printf("\x0E");
 
     clrscr();
     draw_header("");
