@@ -522,7 +522,7 @@ int main(void)
         c_sleep(5);
     }
 
-    ui_typewrite(1, 24, 350, "> episode guide");
+    ui_typewrite(1, 24, 250, "> episode guide");
 
     cgetc();
 
