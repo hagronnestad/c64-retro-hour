@@ -71,6 +71,16 @@ void c_sleep(unsigned int d)
     }
 }
 
+void ui_typewrite(unsigned char x, unsigned char y, unsigned int d, char *text)
+{
+    gotoxy(x, y);
+    for (i = 0; i < strlen(text); i++)
+    {
+        cputc(text[i]);
+        c_sleep(d);
+    }
+}
+
 void print_wrapped2(char *s, unsigned char x, unsigned char y, unsigned char max_width)
 {
     int i = 0;
@@ -511,6 +521,8 @@ int main(void)
         *((char*)0xD800 + i) = splash_colors[i];
         c_sleep(5);
     }
+
+    ui_typewrite(1, 24, 350, "> episode guide");
 
     cgetc();
 
