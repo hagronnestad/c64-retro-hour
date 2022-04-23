@@ -437,6 +437,7 @@ void handle_input_for_page(char key)
             }
             switch_page(PAGE_EPISODES);
             break;
+            
         case 17: // Down
             current_episode_index++;
             if (current_episode_index >= episodes_count)
