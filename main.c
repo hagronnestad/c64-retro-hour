@@ -10,7 +10,7 @@
 #include "hosts.h"
 #include "episodes.h"
 
-#define VERSION "v1.0.0"
+#define VERSION "v1.0.1"
 
 typedef unsigned char BOOL;
 typedef unsigned char BYTE;
